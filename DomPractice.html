@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>DOM Practice</title>
+</head>
+
+<body>
+
+    <h1 id="title">Hello</h1>
+
+    <button onclick="changeText()">
+        Change Text
+    </button>
+    <button onclick="changeColor()">
+        Change Color
+    </button>
+
+    <script>
+
+        function changeText() {
+            document.getElementById("title").innerText = "Welcome!";
+        }
+        function changeColor() {
+            document.getElementById("title").style.color = "red";
+        }
+
+    </script>
+
+
+    <h1>Enter Your Name</h1>
+
+    <input type="text" id="username">
+
+    <button onclick="showName()">
+        Submit
+    </button>
+
+    <input type="text" id="age">
+
+    <button onclick="showAge()">
+        Submit
+    </button>
+    <h1>Enter Your Details</h1>
+
+    <input type="text" id="username1" placeholder="Name">
+    <br><br>
+
+    <input type="text" id="age1" placeholder="Age">
+    <br><br>
+
+    <button onclick="showNameAndAge()">
+        Submit
+    </button>
+
+    <h2 id="result"></h2>
+
+    <script>
+
+        function showName() {
+
+            let name =
+                document.getElementById("username").value;
+
+            alert(name);
+
+        }
+
+        function showAge() {
+
+            let age =
+                document.getElementById("age").value;
+
+            alert(age);
+
+        }
+
+
+        function showNameAndAge() {
+
+            let name = document.getElementById("username1").value;
+            let age = document.getElementById("age1").value;
+
+            document.getElementById("result").innerText =
+                name + " is " + age + " years old";
+
+        }
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mahesh JARVIS Dashboard</title>
+<style>
+body{
+margin:0;font-family:Segoe UI,sans-serif;
+background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);
+background-size:400% 400%;
+animation:bg 12s ease infinite;
+color:white;overflow-x:hidden;
+}
+@keyframes bg{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+
+#particles{position:fixed;inset:0;z-index:-2}
+.container{
+width:95%;max-width:1200px;margin:20px auto;
+backdrop-filter:blur(15px);
+background:rgba(255,255,255,.08);
+border:1px solid rgba(255,255,255,.15);
+border-radius:20px;padding:20px;
+box-shadow:0 0 25px cyan;
+}
+h1{text-align:center;color:#00ffff;text-shadow:0 0 20px cyan}
+.clock{text-align:center;font-size:28px;color:#7df9ff}
+.top{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+input,button{padding:10px;border-radius:10px;border:none}
+input{min-width:180px}
+button{cursor:pointer;font-weight:bold}
+.add{background:#00e676}
+.clear{background:#ff5252;color:white}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin:20px 0}
+.card{
+padding:15px;border-radius:15px;text-align:center;
+background:rgba(255,255,255,.08);
+box-shadow:0 0 15px rgba(0,255,255,.5);
+}
+.task{
+margin:12px 0;border-radius:15px;
+background:rgba(255,255,255,.08);
+overflow:hidden;
+}
+.task-header{
+display:flex;justify-content:space-between;
+padding:15px;cursor:pointer;
+}
+.task-body{
+display:none;padding:15px;border-top:1px solid rgba(255,255,255,.2);
+}
+.completed{border-left:5px solid #00e676}
+.overdue{border-left:5px solid red}
+.progress{
+height:20px;background:#222;border-radius:20px;overflow:hidden;
+}
+.progress-bar{
+height:100%;background:linear-gradient(90deg,#00e5ff,#00ff95);
+width:0%;
+}
+.small{color:#ddd;font-size:13px}
+</style>
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+
+<div class="container">
+<h1>🚀 MAHESH JARVIS TASK DASHBOARD</h1>
+<div class="clock" id="clock"></div>
+
+<div class="top">
+<input id="task" placeholder="Task Name">
+<input type="date" id="actionDate">
+<input type="date" id="dueDate">
+<button class="add" onclick="addTask()">Add Task</button>
+<button class="clear" onclick="clearAll()">Clear All</button>
+</div>
+
+<div class="stats">
+<div class="card"><h2 id="total">0</h2>Total</div>
+<div class="card"><h2 id="completed">0</h2>Completed</div>
+<div class="card"><h2 id="pending">0</h2>Pending</div>
+<div class="card"><h2 id="percent">0%</h2>Efficiency</div>
+</div>
+
+<div class="progress"><div class="progress-bar" id="bar"></div></div>
+
+<h2>📋 Tasks (Click to Expand / Collapse)</h2>
+<div id="taskList"></div>
+</div>
+
+<script>
+let tasks=JSON.parse(localStorage.getItem('maheshTasks')||'[]');
+
+function save(){
+localStorage.setItem('maheshTasks',JSON.stringify(tasks));
+}
+
+function updateStats(){
+let total=tasks.length;
+let completed=tasks.filter(t=>t.completed).length;
+let pending=total-completed;
+let percent=total?Math.round(completed/total*100):0;
+
+document.getElementById('total').innerText=total;
+document.getElementById('completed').innerText=completed;
+document.getElementById('pending').innerText=pending;
+document.getElementById('percent').innerText=percent+'%';
+document.getElementById('bar').style.width=percent+'%';
+}
+
+function addTask(){
+let task=document.getElementById('task').value.trim();
+if(!task){alert('Enter task');return;}
+
+tasks.push({
+task,
+actionDate:document.getElementById('actionDate').value,
+dueDate:document.getElementById('dueDate').value,
+created:new Date().toLocaleString(),
+completed:false
+});
+
+save();
+render();
+
+document.getElementById('task').value='';
+}
+
+function render(){
+const list=document.getElementById('taskList');
+list.innerHTML='';
+
+tasks.forEach((t,i)=>{
+
+const today=new Date().toISOString().split('T')[0];
+
+const div=document.createElement('div');
+div.className='task '+(t.completed?'completed':'')+((!t.completed&&t.dueDate&&t.dueDate<today)?' overdue':'');
+
+div.innerHTML=`
+<div class="task-header" onclick="toggleBody(${i})">
+<span>${t.completed?'✅':'📌'} ${t.task}</span>
+<span>▼</span>
+</div>
+
+<div class="task-body" id="body-${i}">
+<p><b>Action Date:</b> ${t.actionDate||'-'}</p>
+<p><b>Due Date:</b> ${t.dueDate||'-'}</p>
+<p><b>Created:</b> ${t.created}</p>
+
+<button onclick="markDone(${i})">Done</button>
+<button onclick="editTask(${i})">Edit</button>
+<button onclick="deleteTask(${i})">Delete</button>
+</div>`;
+
+list.appendChild(div);
+});
+
+updateStats();
+}
+
+function toggleBody(i){
+const el=document.getElementById('body-'+i);
+el.style.display=el.style.display==='block'?'none':'block';
+}
+
+function markDone(i){
+tasks[i].completed=!tasks[i].completed;
+save();render();
+}
+
+function editTask(i){
+let v=prompt('Edit Task',tasks[i].task);
+if(v){tasks[i].task=v;save();render();}
+}
+
+function deleteTask(i){
+tasks.splice(i,1);
+save();render();
+}
+
+function clearAll(){
+if(confirm('Delete all tasks?')){
+tasks=[];
+save();
+render();
+}
+}
+
+setInterval(()=>{
+document.getElementById('clock').innerText=new Date().toLocaleTimeString();
+},1000);
+
+render();
+
+const canvas=document.getElementById('particles');
+const ctx=canvas.getContext('2d');
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+
+let particles=[];
+for(let i=0;i<100;i++){
+particles.push({
+x:Math.random()*canvas.width,
+y:Math.random()*canvas.height,
+r:Math.random()*3+1,
+dx:(Math.random()-.5),
+dy:(Math.random()-.5)
+});
+}
+
+function animate(){
+ctx.clearRect(0,0,canvas.width,canvas.height);
+particles.forEach(p=>{
+ctx.beginPath();
+ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+ctx.fillStyle='rgba(0,255,255,.8)';
+ctx.fill();
+p.x+=p.dx;p.y+=p.dy;
+if(p.x<0||p.x>canvas.width)p.dx*=-1;
+if(p.y<0||p.y>canvas.height)p.dy*=-1;
+});
+requestAnimationFrame(animate);
+}
+animate();
+</script>
+</body>
+</html>

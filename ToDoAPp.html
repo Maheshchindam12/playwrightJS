@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Advanced Todo App</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #74ebd5, #9face6);
+            text-align: center;
+            margin-top: 30px;
+            transition: 0.3s;
+        }
+
+        .container {
+            width: 700px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px gray;
+        }
+
+        h1 {
+            color: #2c3e50;
+        }
+
+        input,
+        select {
+            padding: 10px;
+            border-radius: 5px;
+            border: 2px solid #3498db;
+            margin: 5px;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 3px;
+            color: white;
+        }
+
+        button:hover {
+            opacity: 0.8;
+        }
+
+        .add-btn {
+            background: #3498db;
+        }
+
+        .done-btn {
+            background: green;
+        }
+
+        .edit-btn {
+            background: orange;
+        }
+
+        .delete-btn {
+            background: red;
+        }
+
+        .clear-btn {
+            background: #6c757d;
+        }
+
+        .dark-btn {
+            background: #343a40;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            background: white;
+            margin: 10px auto;
+            padding: 10px;
+            width: 90%;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.3s;
+        }
+
+        li:hover {
+            transform: scale(1.02);
+        }
+
+        .task-info {
+            flex: 1;
+            text-align: left;
+        }
+
+        .completed {
+            text-decoration: line-through;
+            background-color: #d4edda;
+        }
+
+        .dark {
+            background: #1f2937;
+        }
+
+        .dark .container {
+            background: #374151;
+            color: white;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Todo App</h1>
+
+        <input type="text"
+               id="taskInput"
+               placeholder="Enter Task">
+
+        <button class="add-btn"
+                onclick="addTask()">
+            Add Task
+        </button>
+
+        <button class="dark-btn"
+                onclick="toggleTheme()">
+            Dark Mode
+        </button>
+
+        <button class="clear-btn"
+                onclick="clearAll()">
+            Clear All
+        </button>
+
+        <br><br>
+
+        <input type="text"
+               id="searchInput"
+               placeholder="Search Task">
+
+        <select id="filter">
+            <option value="all">All Tasks</option>
+            <option value="completed">Completed</option>
+            <option value="pending">Pending</option>
+        </select>
+
+        <div class="stats">
+            <h3>Total: <span id="count">0</span></h3>
+            <h3>Completed: <span id="completedCount">0</span></h3>
+            <h3>Pending: <span id="pendingCount">0</span></h3>
+        </div>
+
+        <ul id="taskList"></ul>
+
+    </div>
+
+    <script>
+
+        const colors = [
+            "#ff7675",
+            "#74b9ff",
+            "#55efc4",
+            "#ffeaa7",
+            "#a29bfe"
+        ];
+
+        function updateCount() {
+
+            const tasks =
+                document.querySelectorAll("#taskList li");
+
+            const completed =
+                document.querySelectorAll(
+                    "#taskList li.completed"
+                );
+
+            document.getElementById("count")
+                .innerText = tasks.length;
+
+            document.getElementById("completedCount")
+                .innerText = completed.length;
+
+            document.getElementById("pendingCount")
+                .innerText =
+                tasks.length - completed.length;
+        }
+
+        function saveTasks() {
+
+            localStorage.setItem(
+                "tasks",
+                document.getElementById("taskList").innerHTML
+            );
+        }
+
+        function attachEvents() {
+
+            document
+                .querySelectorAll(".delete-btn")
+                .forEach(btn => {
+
+                    btn.onclick = function () {
+
+                        this.parentElement.remove();
+
+                        updateCount();
+
+                        saveTasks();
+                    };
+                });
+
+            document
+                .querySelectorAll(".done-btn")
+                .forEach(btn => {
+
+                    btn.onclick = function () {
+
+                        this.parentElement.classList.toggle(
+                            "completed"
+                        );
+
+                        updateCount();
+
+                        saveTasks();
+                    };
+                });
+
+            document
+                .querySelectorAll(".edit-btn")
+                .forEach(btn => {
+
+                    btn.onclick = function () {
+
+                        let taskText =
+                            this.parentElement
+                                .querySelector("strong");
+
+                        let newTask =
+                            prompt(
+                                "Edit Task",
+                                taskText.innerText
+                            );
+
+                        if (newTask) {
+
+                            taskText.innerText =
+                                newTask;
+
+                            saveTasks();
+                        }
+                    };
+                });
+        }
+
+        function addTask() {
+
+            let task =
+                document.getElementById(
+                    "taskInput"
+                ).value.trim();
+
+            if (task === "") {
+
+                alert("Please enter task");
+
+                return;
+            }
+
+            let li =
+                document.createElement("li");
+
+            li.style.borderLeft =
+                "5px solid " +
+                colors[
+                Math.floor(
+                    Math.random() *
+                    colors.length
+                )
+                ];
+
+            let taskInfo =
+                document.createElement("div");
+
+            taskInfo.className =
+                "task-info";
+
+            let time =
+                new Date()
+                    .toLocaleTimeString();
+
+            taskInfo.innerHTML =
+                `<strong>${task}</strong><br>
+                 <small>${time}</small>`;
+
+            let doneBtn =
+                document.createElement(
+                    "button"
+                );
+
+            doneBtn.innerText =
+                "Done";
+
+            doneBtn.className =
+                "done-btn";
+
+            let editBtn =
+                document.createElement(
+                    "button"
+                );
+
+            editBtn.innerText =
+                "Edit";
+
+            editBtn.className =
+                "edit-btn";
+
+            let deleteBtn =
+                document.createElement(
+                    "button"
+                );
+
+            deleteBtn.innerText =
+                "Delete";
+
+            deleteBtn.className =
+                "delete-btn";
+
+            li.appendChild(taskInfo);
+            li.appendChild(doneBtn);
+            li.appendChild(editBtn);
+            li.appendChild(deleteBtn);
+
+            document
+                .getElementById(
+                    "taskList"
+                )
+                .appendChild(li);
+
+            document
+                .getElementById(
+                    "taskInput"
+                ).value = "";
+
+            attachEvents();
+
+            updateCount();
+
+            saveTasks();
+        }
+
+        function clearAll() {
+
+            if (
+                confirm(
+                    "Delete all tasks?"
+                )
+            ) {
+
+                document
+                    .getElementById(
+                        "taskList"
+                    )
+                    .innerHTML = "";
+
+                updateCount();
+
+                saveTasks();
+            }
+        }
+
+        function toggleTheme() {
+
+            document.body
+                .classList.toggle(
+                    "dark"
+                );
+        }
+
+        document
+            .getElementById(
+                "taskInput"
+            )
+            .addEventListener(
+                "keypress",
+                function (event) {
+
+                    if (
+                        event.key ===
+                        "Enter"
+                    ) {
+
+                        addTask();
+                    }
+                }
+            );
+
+        document
+            .getElementById(
+                "searchInput"
+            )
+            .addEventListener(
+                "keyup",
+                function () {
+
+                    let value =
+                        this.value
+                            .toLowerCase();
+
+                    let tasks =
+                        document
+                            .querySelectorAll(
+                                "#taskList li"
+                            );
+
+                    tasks.forEach(task => {
+
+                        task.style.display =
+                            task.innerText
+                                .toLowerCase()
+                                .includes(value)
+                                ? "flex"
+                                : "none";
+                    });
+                }
+            );
+
+        document
+            .getElementById(
+                "filter"
+            )
+            .addEventListener(
+                "change",
+                function () {
+
+                    const value =
+                        this.value;
+
+                    const tasks =
+                        document
+                            .querySelectorAll(
+                                "#taskList li"
+                            );
+
+                    tasks.forEach(task => {
+
+                        if (
+                            value ===
+                            "all"
+                        ) {
+
+                            task.style.display =
+                                "flex";
+                        }
+
+                        else if (
+                            value ===
+                            "completed"
+                        ) {
+
+                            task.style.display =
+                                task.classList.contains(
+                                    "completed"
+                                )
+                                    ? "flex"
+                                    : "none";
+                        }
+
+                        else {
+
+                            task.style.display =
+                                !task.classList.contains(
+                                    "completed"
+                                )
+                                    ? "flex"
+                                    : "none";
+                        }
+                    });
+                }
+            );
+
+        window.onload = function () {
+
+            document
+                .getElementById(
+                    "taskList"
+                )
+                .innerHTML =
+                localStorage.getItem(
+                    "tasks"
+                ) || "";
+
+            attachEvents();
+
+            updateCount();
+        };
+
+    </script>
+
+</body>
+
+</html>

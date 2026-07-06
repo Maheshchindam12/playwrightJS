@@ -1,0 +1,81 @@
+npm init playwright@latest
+
+Run by : 
+npx playwright test
+
+Now your learning becomes:
+
+JavaScript
++
+Node.js
++
+Automation
++
+Playwright
+
+Inside that directory, you can run several commands:
+
+  npx playwright test
+    Runs the end-to-end tests.
+
+  npx playwright test --ui
+    Starts the interactive UI mode.
+
+  npx playwright test --project=chromium
+    Runs the tests only on Desktop Chrome.
+
+  npx playwright test example
+    Runs the tests in a specific file.
+
+  npx playwright test --debug
+    Runs the tests in debug mode.
+
+  npx playwright codegen
+    Auto generate tests with Codegen.
+
+We suggest that you begin by typing:
+
+    npx playwright test
+
+    npx playwright test --trace on
+    npx playwright show-trace
+
+And check out the following files:
+  - .\tests\example.spec.js - Example end-to-end test
+  - .\playwright.config.js - Playwright Test configuration
+
+  Verify Node.js
+
+Run:
+
+node -v
+
+Then:
+
+npm -v
+
+
+node day1.js 
+
+Loop	Gives
+for...in	indexes
+for...of	values
+
+
+report 
+npm install -D allure-playwright
+npm install -g allure-commandline
+allure --version
+
+after execture 
+allure generate allure-results --clean
+allure open allure-report
+
+rmdir /s /q allure-results
+rmdir /s /q allure-report
+
+  npx playwright test --grep @login
+npx playwright test --grep-invert @regression
+
+set ENV=qa && npx playwright test tests/config.spec.js
+set ENV=stage && npx playwright test --grep @cart

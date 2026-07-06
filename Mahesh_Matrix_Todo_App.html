@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Mahesh Matrix Todo App</title>
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#0f172a;color:#111;overflow-x:hidden}
+#matrix{position:fixed;inset:0;z-index:-1;background:#000}
+.container{width:900px;max-width:95%;margin:20px auto;background:rgba(255,255,255,.92);padding:20px;border-radius:12px}
+input,select,button{padding:10px;margin:5px}
+li{display:flex;justify-content:space-between;align-items:center;margin:8px 0;padding:10px;border-radius:6px;background:#fff}
+.completed{text-decoration:line-through;background:#d4edda}
+.overdue{background:#ffd6d6}
+</style>
+</head>
+<body>
+<canvas id="matrix"></canvas>
+
+<div class="container">
+<h1>Mahesh Matrix Todo App</h1>
+
+<input id="taskInput" placeholder="Task">
+<input type="date" id="actionDate">
+<input type="date" id="dueDate">
+<button onclick="addTask()">Add</button>
+<button onclick="clearAll()">Clear All</button>
+
+<br>
+
+<input id="searchInput" placeholder="Search">
+
+<h3>Total: <span id="total">0</span> |
+Completed: <span id="completed">0</span> |
+Pending: <span id="pending">0</span></h3>
+
+<ul id="taskList"></ul>
+</div>
+
+<script>
+let tasks = JSON.parse(localStorage.getItem('tasks')||'[]');
+
+function save(){
+ localStorage.setItem('tasks',JSON.stringify(tasks));
+}
+
+function updateCounts(){
+ document.getElementById('total').innerText=tasks.length;
+ document.getElementById('completed').innerText=tasks.filter(t=>t.completed).length;
+ document.getElementById('pending').innerText=tasks.filter(t=>!t.completed).length;
+}
+
+function render(){
+ const ul=document.getElementById('taskList');
+ ul.innerHTML='';
+
+ const search=document.getElementById('searchInput').value.toLowerCase();
+
+ tasks.filter(t=>t.task.toLowerCase().includes(search))
+ .forEach((t,index)=>{
+
+  const li=document.createElement('li');
+
+  const today=new Date().toISOString().split('T')[0];
+
+  if(t.completed) li.classList.add('completed');
+  if(!t.completed && t.dueDate && t.dueDate<today) li.classList.add('overdue');
+
+  li.innerHTML=`
+  <div>
+   <strong>${t.task}</strong><br>
+   Action Date: ${t.actionDate||'-'}<br>
+   Due Date: ${t.dueDate||'-'}<br>
+   Created: ${t.created}
+  </div>
+  <div>
+   <button onclick="toggleTask(${index})">Done</button>
+   <button onclick="editTask(${index})">Edit</button>
+   <button onclick="deleteTask(${index})">Delete</button>
+  </div>`;
+
+  ul.appendChild(li);
+ });
+
+ updateCounts();
+}
+
+function addTask(){
+ const task=document.getElementById('taskInput').value.trim();
+ if(!task){alert('Enter task');return;}
+
+ tasks.push({
+  task,
+  actionDate:document.getElementById('actionDate').value,
+  dueDate:document.getElementById('dueDate').value,
+  created:new Date().toLocaleString(),
+  completed:false
+ });
+
+ save();
+ render();
+
+ document.getElementById('taskInput').value='';
+}
+
+function toggleTask(i){
+ tasks[i].completed=!tasks[i].completed;
+ save(); render();
+}
+
+function editTask(i){
+ const v=prompt('Edit task',tasks[i].task);
+ if(v){tasks[i].task=v;save();render();}
+}
+
+function deleteTask(i){
+ tasks.splice(i,1);
+ save(); render();
+}
+
+function clearAll(){
+ if(confirm('Delete all tasks?')){
+  tasks=[]; save(); render();
+ }
+}
+
+document.getElementById('searchInput').addEventListener('keyup',render);
+
+render();
+
+const canvas=document.getElementById('matrix');
+const ctx=canvas.getContext('2d');
+canvas.width=innerWidth;
+canvas.height=innerHeight;
+
+const chars='MAHESH';
+const fontSize=20;
+const cols=Math.floor(canvas.width/fontSize);
+const drops=Array(cols).fill(1);
+
+function draw(){
+ ctx.fillStyle='rgba(0,0,0,0.08)';
+ ctx.fillRect(0,0,canvas.width,canvas.height);
+
+ ctx.fillStyle='#00ff66';
+ ctx.font=fontSize+'px monospace';
+
+ for(let i=0;i<drops.length;i++){
+   const text=chars[Math.floor(Math.random()*chars.length)];
+   ctx.fillText(text,i*fontSize,drops[i]*fontSize);
+
+   if(drops[i]*fontSize>canvas.height && Math.random()>0.975)
+      drops[i]=0;
+
+   drops[i]++;
+ }
+}
+setInterval(draw,50);
+</script>
+</body>
+</html>
